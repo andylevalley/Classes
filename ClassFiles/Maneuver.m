@@ -5,6 +5,7 @@ classdef Maneuver < handle
         ManeuverAttributes % [ae, xd, yd, zmax, upsilon, beta]
         SatelliteName
         SatelliteProperties
+        TimeBounds = [12*60*60, 24*60*60];
     end
     
     properties (Dependent)
