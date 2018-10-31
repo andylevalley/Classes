@@ -37,8 +37,8 @@ classdef Satellite < handle
         
     methods % propagate orbit, update state and current time
         function obj = Propagate(obj,Time)
-            [rECI,vECI] = TwoBodyPropagation(obj.CurrentStateECI(1:3)',...
-                          obj.CurrentStateECI(4:6)',Time);
+          [rECI,vECI] = TwoBodyPropagation(obj.CurrentStateECI(1:3)',...
+                          obj.CurrentStateECI(4:6)',Time);       
             obj.CurrentStateECI = [rECI(1:3,end)',vECI(1:3,end)'];
             obj.CurrentTimeUTCO(6) = obj.CurrentTimeUTCO(6) + Time(end);
             CurrentTimeJD = utco2jd(obj.CurrentTimeUTCO);
