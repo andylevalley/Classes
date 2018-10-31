@@ -2,7 +2,8 @@ clc
 clear all
 
 % addpath(genpath('/home/andy/Dropbox/Thesis/Classes')) 
-addpath(genpath('/home/andy/Desktop/Classes-master')) 
+% addpath(genpath('/home/andy/Desktop/Classes-master')) 
+addpath(genpath('I:/setup/Desktop/Classes-master/')) 
 
 %% build sat objects
 
@@ -43,4 +44,4 @@ ManeuverList = [maneuver_sat1, maneuver_sat2, maneuver_sat3];
 p1 = Problem(ManeuverList,2*24*60*60,'GA',OptimStruct);
 
 
-state{}(1,1:6) = ManeuverList(1:3).ManeuverStateECI
+
