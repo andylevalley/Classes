@@ -6,6 +6,7 @@ classdef Maneuver < handle
         SatelliteName
         SatelliteProperties
         TimeBounds = [12*60*60, 24*60*60];
+        Constraint
     end
     
     properties (Dependent)
@@ -13,9 +14,10 @@ classdef Maneuver < handle
     end
 
     methods % initialize class from user
-        function obj = Maneuver(Type,ManeuverAttributes,SatelliteObject)
+        function obj = Maneuver(Type,ManeuverAttributes,Constraint,SatelliteObject)
             obj.Type = Type;
             obj.ManeuverAttributes = ManeuverAttributes;
+            obj.Constraint = Constraint;
             obj.SatelliteName = SatelliteObject.Name;
             obj.SatelliteProperties = SatelliteObject;
         end

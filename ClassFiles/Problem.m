@@ -5,12 +5,14 @@ classdef Problem < handle
         TotalTime
         Algorithm
         OptimizationStructure
+        VirtualChiefECI
     end
     
     methods
-        function obj = Problem(ManeuverList,TotalTime,Algorithm,OptimizationStructure)
+        function obj = Problem(ManeuverList,TotalTime,VirtualChief,Algorithm,OptimizationStructure)
             obj.ManeuverList = ManeuverList;
             obj.TotalTime = TotalTime;
+            obj.VirtualChiefECI = VirtualChief;
             obj.Algorithm = Algorithm;
             obj.OptimizationStructure = OptimizationStructure;
             
