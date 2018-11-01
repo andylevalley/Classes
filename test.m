@@ -1,9 +1,9 @@
 clc
 clear all
 
-% addpath(genpath('/home/andy/Dropbox/Thesis/Classes')) 
+addpath(genpath('C:/Users/andyl/Desktop/Classes-master')) 
 % addpath(genpath('/home/andy/Desktop/Classes-master')) 
-addpath(genpath('I:/setup/Desktop/Classes-master/')) 
+% addpath(genpath('I:/setup/Desktop/Classes-master/')) 
 
 %% build sat objects
 
