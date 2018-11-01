@@ -23,6 +23,16 @@ classdef Satellite < handle
             obj.MeanMotion = sqrt(obj.mu/(6378.137 + 35786)^3);
         end
     end
+    
+    methods
+        function obj = Reset(obj)
+            obj.CurrentStateECI(1:end) = [];
+            obj.CurrentTimeUTCO(1:end) = [];
+            obj.CurrentStateECI = obj.InitialStateECI;
+            obj.CurrentTimeUTCO = obj.InitialTimeUTCO;
+
+        end
+    end
         
     methods % get current state in Hill frame relative to Virtual Chief
         function [rHill,vHill] = CurrentStateHill(obj,VirtualChiefECI)
