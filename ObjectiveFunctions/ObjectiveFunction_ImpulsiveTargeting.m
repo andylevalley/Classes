@@ -3,15 +3,20 @@ function f = ObjectiveFunction_ImpulsiveTargeting(dvar,Problem)
 %% pull out relevent values from Problem structure
 ManeuverList = Problem.ManeuverList;
 NumberManeuvers = length(ManeuverList);
-VirtualChiefECI = Problem.VirtualChiefECI;
-InitialStateECI = VirtualChiefECI;
+Inspector = Problem.Inspector;
 
 %% Seperate chromosome
 Order = dvar(1:NumberManeuvers);
 TransferTimes = dvar(NumberManeuvers+1:end-NumberManeuvers);
 
 %% Targeting
-InitState = Problem.InitialStateECI;
+
+Inspector.Reset;
+for i = 1:NumberManeuvers
+    ManeuverList(i).SatelliteProperties.Reset;
+end
+
+
 beta = dvar(end-NumberManeuvers+1:end);
 
 % assign beta value to maneuvers
@@ -21,61 +26,59 @@ end
 
 f = 0;
 k = 1;
+Inspector.Propagate(TransferTimes(k));
 for i = 1:length(Order)
-    for n = 1:NumberManeuvers
-        ManeuverList(i).SatelliteProperties.Propagate(sum(TransferTimes(1:k)));
-    end
     
-    index = find(Order == i);
-    targetECI = ManeuverList(index).ManeuverStateECI;
-    targetHill = eci2hill(VirtualChiefECI(1:3)',VirtualChiefECI(4:6)',...
-                 targetECI(1:3)',targetECI(4:6)');
-    DeltaV = HCW_DeltaV(CurrentState(1:3)',targetHill(tgt,1:3)',...
-             CurrentState(4:6)',targetHill(tgt,4:6)',TransferTimes(k+1),...
+    [n,m] = find(Order == i);
+    TargetRSO = ManeuverList(m).SatelliteProperties;
+    ManeuverRSO = ManeuverList(m);
+    TargetRSO.Propagate(sum(TransferTimes(1:k+1)));
+    
+    TargetHill(1,1:6) = ManeuverRSO.ManeuverStateHill;
+    InspectorHill = Inspector.CurrentStateHill(TargetRSO.CurrentStateECI);
+             
+    DeltaV = HCW2BurnTargeting(InspectorHill(1:3)',TargetHill(1:3)',...
+             InspectorHill(4:6)',TargetHill(4:6)',TransferTimes(k+1),...
              ManeuverList(1).SatelliteProperties.MeanMotion);
          
-    CurrentState = ;
-    
-    f = f + norm(DeltaV);
+    [rHillTransfer,vHillTransfer] = CWHPropagator(InspectorHill(1:3)',...
+                                    InspectorHill(4:6)'+DeltaV(1:3,1),...
+                                    TargetRSO.MeanMotion,TransferTimes(k+1));
+                               
+    [rHillLoiter,vHillLoiter] = CWHPropagator(rHillTransfer(1:3,end),...
+                                vHillTransfer(1:3,end)+DeltaV(1:3,2),...
+                                TargetRSO.MeanMotion,TransferTimes(k+2));
+         
+   f = f + abs(norm(DeltaV(1:3,1))) + abs(norm(DeltaV(1:3,2)));
+   
+   TargetRSO.Propagate(TransferTimes(k+2));
+                           
+   [r,v] = hill2eci(TargetRSO.CurrentStateECI(1:3)',...
+           TargetRSO.CurrentStateECI(4:6)',...
+           rHillLoiter(1:3,end),vHillLoiter(1:3,end));
+       
+   Inspector.CurrentStateECI = [r' v'];
     
     
     k = k+2;
-%% Calculate Fitness
-
-% initialize variables
-CurrentState = InitState;
-n = 1;
-f = 0;
-
-for i = 1:length(Order)
-    
-    tgt = dvar(i);
-    
-    [x_drift,v_drift] = CWHPropagator(CurrentState(1:3)',CurrentState(4:6)',Omega,TransferTimes(n));
-    CurrentState = [x_drift',v_drift'];
-    
-    DeltaV = HCW_DeltaV(CurrentState(1:3)',TargetInfo(tgt,1:3)',...
-             CurrentState(4:6)',TargetInfo(tgt,4:6)',TransferTimes(n+1),...
-             ManeuverList(1).SatelliteProperties.MeanMotion);
-    
-    CurrentState = TargetInfo(tgt,:);
-    
-    f = f + norm(DeltaV);
-    
-    n = n + 2;
-    
 end
 
-[x_drift,v_drift] = CWHPropagator(CurrentState(1:3)',CurrentState(4:6)',Omega,TransferTimes(n));
-CurrentState = [x_drift',v_drift'];
 
-ReturnState = InitState;
+InspectorState = Inspector.CurrentStateECI;
+Inspector.Reset;
+Inspector.Propagate(sum(TransferTimes));
 
-DeltaV = HCW_DeltaV(CurrentState(1:3)',ReturnState(1:3)',...
-    CurrentState(4:6)',ReturnState(4:6)',TransferTimes(n+1),Omega);
+[rHill,vHill] = eci2hill(Inspector.CurrentStateECI(1:3)',...
+                Inspector.CurrentStateECI(4:6)',InspectorState(1:3)',...
+                InspectorState(4:6)');
+            
+TargetHill = [0 0 0 0 0 0];
 
-CurrentState = ReturnState;
+DeltaV = HCW2BurnTargeting(rHill(1:3),TargetHill(1:3)',...
+         vHill(1:3),TargetHill(4:6)',TransferTimes(k+1),...
+         ManeuverList(1).SatelliteProperties.MeanMotion);
 
-f = f + norm(DeltaV);
+
+f = f + abs(norm(DeltaV(1:3,1))) + abs(norm(DeltaV(1:3,2)));
 
 end
