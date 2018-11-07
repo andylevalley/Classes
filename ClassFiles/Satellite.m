@@ -35,13 +35,13 @@ classdef Satellite < handle
     end
         
     methods % get current state in Hill frame relative to Virtual Chief
-        function [rHill,vHill] = CurrentStateHill(obj,VirtualChiefECI)
+        function Hill = CurrentStateHill(obj,VirtualChiefECI)
              [rHill,vHill] = eci2hill(VirtualChiefECI(1:3)',...
                              VirtualChiefECI(4:6)',...
                              obj.CurrentStateECI(1:3)',...
                              obj.CurrentStateECI(4:6)');
-             rHill = rHill';
-             vHill = vHill';
+             Hill = [rHill', vHill'];
+
         end
     end
         

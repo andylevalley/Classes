@@ -4,15 +4,13 @@ classdef Problem < handle
         ManeuverList
         TotalTime
         OptimizationStructure
-        VirtualChiefECI
         Inspector
     end
     
     methods
-        function obj = Problem(ManeuverList,TotalTime,VirtualChief,Inspector,OptimizationStructure)
+        function obj = Problem(ManeuverList,TotalTime,Inspector,OptimizationStructure)
             obj.ManeuverList = ManeuverList;
             obj.TotalTime = TotalTime;
-            obj.VirtualChiefECI = VirtualChief;
             obj.Inspector = Inspector;
             obj.OptimizationStructure = OptimizationStructure;
             
@@ -22,18 +20,29 @@ classdef Problem < handle
             ubInt = ones(1,NumberManeuvers)*NumberManeuvers;
             lbInt = ones(1,NumberManeuvers);
             
-            ub = zeros(1,NumberManeuvers+1);
-            lb = zeros(1,NumberManeuvers+1);
-            ub(1) = obj.TotalTime;
-            lb(1) = 1;
-            for i = 1:NumberManeuvers
-                ub(i+1) = obj.ManeuverList(i).TimeBounds(2);
-                lb(i+1) = obj.ManeuverList(i).TimeBounds(1);
-            end
+            ubInit = obj.TotalTime;
+            lbInit = 1;
             
-            ub = [ubInt, ub];
-            lb = [lbInt, lb];
-
+            TransferTimeMin = 60*30;
+            TransferTimeMax = obj.TotalTime;
+            
+            n = 1;
+            for i = 1:NumberManeuvers
+                ub(n) = TransferTimeMax;
+                lb(n) = TransferTimeMin;
+                ub(n+1) = obj.ManeuverList(i).TimeBounds(2);
+                lb(n+1) = obj.ManeuverList(i).TimeBounds(1);
+                n = n + 2;
+            end
+            lb(n) = TransferTimeMin;
+            ub(n) = TransferTimeMax;
+            
+            lbBeta = zeros(1,NumberManeuvers);
+            ubBeta = ones(1,NumberManeuvers)*2*pi;
+            
+            ub = [ubInt, ubInit, ub, ubBeta];
+            lb = [lbInt, lbInit, lb, lbBeta];
+            
             obj.OptimizationStructure.NumberVariables = NumberVariables;
             obj.OptimizationStructure.UpperBound = ub;
             obj.OptimizationStructure.LowerBound = lb;
