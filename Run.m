@@ -20,7 +20,7 @@ opts = optimoptions('ga','CrossoverFraction',CrossoverFraction,...
 switch Problem.OptimizationStructure.ObjectiveFunction
     case 'Impulsive'
         ObjectiveFunction = @(dvar) ObjectiveFunction_ImpulsiveTargeting(dvar,Problem);
-        ConstraintFunction = @(dvar) constraint(dvar,Problem);
+        ConstraintFunction = @(dvar) Constraint(dvar,Problem);
     case 'BVP'
 end
 
